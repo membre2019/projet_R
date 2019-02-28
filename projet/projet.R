@@ -12,6 +12,9 @@ data
 # Corrélation entre la migration et les autres variables
 cor(subset(data, select=-c(1)), data["Net migration"], use="complete.obs")
 
-# Suppression des lignes contenant des valeurs NA
-data = data[complete.cases(data), ]
+# Remplacement des Na par la moyenne des colonnes
+data[] <- lapply(data, function(x) { 
+  x[is.na(x)] <- mean(x, na.rm = TRUE)
+  x
+})
 data
