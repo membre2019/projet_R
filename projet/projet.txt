@@ -1,0 +1,6 @@
+Vous trouverez en pièce jointe notre base de données (l'importer sur R pour pouvoir y voir clair). 
+Elle récence sur tous les pays du monde (227 observations) plusieurs données telles que la population, la densité, le PIB (en dollar par capital), le solde migratoire, le taux d'alphabétisation, les taux de natalité et de mortalité, la part de l'agriculture , de l'industrie et des services dans l'économie du pays etc..
+
+Nous essayerons de voir comment se comporte le solde migratoire des pays en fonction des autres variables précitées.
+Par exemple : Un pays avec une forte part de l'industrie au PIB aura-t-elle tendance à attirer plus de migrants ? 
+ou encore : dans les pays où la densité de la  population est élevée, comment se comporte le solde migratoire ? etc...
