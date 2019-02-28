@@ -14,7 +14,7 @@ cor(subset(data, select=-c(1)), data["Net migration"], use="complete.obs")
 
 # Remplacement des Na par la moyenne des colonnes
 data[] <- lapply(data, function(x) { 
-  x[is.na(x)] <- mean(x, na.rm = TRUE)
+  x[is.na(x)] <- round(mean(x, na.rm = TRUE), 3)
   x
 })
 data
