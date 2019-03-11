@@ -1,11 +1,16 @@
 library(readr)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(grid)
+library(corrplot)
 
 # Chargement des données
 countries <- read_csv("C:/Users/joris/OneDrive/Documents/Master/Semestre_2/SEP/projet/countries.csv", locale = locale(decimal_mark = ","))
 View(countries)
 
 # Suppression des colonnes les moins informatives
-cols.dont.want <- c("Population", "Region", "Other (%)", "Climate", "Arable (%)", "Crops (%)", "Phones (per 1000)", "Area (sq. mi.)") 
+cols.dont.want <- c("Population", "Other (%)", "Climate", "Arable (%)", "Crops (%)", "Phones (per 1000)", "Area (sq. mi.)") 
 data <- countries[, ! names(countries) %in% cols.dont.want, drop = F]
 data
 
@@ -17,4 +22,38 @@ data[] <- lapply(data, function(x) {
   x[is.na(x)] <- round(mean(x, na.rm = TRUE), 3)
   x
 })
-data
+View(data)
+
+# Dictionnaire de données
+colnames(data) 
+
+# Pays par région
+data %>%
+  select(Country, Region) %>%
+  group_by(Region) %>%
+  summarise(pays = n())
+
+# Solde migratoire moyen par région
+data %>%
+  select(Region, `Net migration`) %>%
+  group_by(Region) %>%
+  dplyr::summarize(Moyenne = mean(`Net migration`)) %>%
+  collect() %>%
+  ggplot() +
+  geom_col(aes(x=Region, y=Moyenne)) +
+  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
+  
+
+# Corrélation entre la migration et les autres vairables
+correlation <- cor(data[,c(-1,-2,-5)], data[,5])
+corrplot(correlation, type = 'full', cl.length = 9, cl.ratio = 1)
+
+
+# Moyenne des variables (ordonnées par solde migratoire)
+variables_mean <- data %>%
+  select(-Country) %>%
+  group_by(Region) %>%
+  summarise_all(funs(mean)) %>%
+  arrange(desc(`Net migration`))
+
+View(variables_mean)
