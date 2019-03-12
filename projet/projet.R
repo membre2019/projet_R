@@ -62,6 +62,8 @@ variables_mean <- data %>%
 
 View(variables_mean)
 
+# Test d'indépendance
+chisq.test(data$Region, data$`Net migration`)
 
 # Test de Bartlett pour la migration par région
 bartlett.test(data$`Net migration` ~ data$Region)
