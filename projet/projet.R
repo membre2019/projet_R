@@ -57,3 +57,10 @@ variables_mean <- data %>%
   arrange(desc(`Net migration`))
 
 View(variables_mean)
+
+
+# Test de Bartlett pour la migration par région
+bartlett.test(data$`Net migration` ~ data$Region)
+
+# Test ANOVA
+oneway.test(data$`Net migration` ~ data$Region, var.equal = TRUE) 
