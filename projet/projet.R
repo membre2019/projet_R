@@ -33,15 +33,19 @@ data %>%
   group_by(Region) %>%
   summarise(pays = n())
 
+
 # Solde migratoire moyen par région
 data %>%
   select(Region, `Net migration`) %>%
   group_by(Region) %>%
-  dplyr::summarize(Moyenne = mean(`Net migration`)) %>%
+  dplyr::summarize(Moyenne_migratoire=mean(`Net migration`)) %>%
   collect() %>%
-  ggplot() +
-  geom_col(aes(x=Region, y=Moyenne)) +
-  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
+  ggplot(aes(x=reorder(Region, desc(Moyenne_migratoire)))) +
+  scale_fill_gradient2(low="purple", high="green") +
+  theme_dark() +
+  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +
+  geom_col(aes(x=Region, y=Moyenne_migratoire, fill=Moyenne_migratoire)) 
+  
   
 
 # Corrélation entre la migration et les autres vairables
