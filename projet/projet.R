@@ -1,21 +1,20 @@
 library(readr)
 library(dplyr)
 library(ggplot2)
+install.packages("gridExtra")
 library(gridExtra)
 library(grid)
 library(corrplot)
 
-# Chargement des données
-countries <- read_csv("C:/Users/joris/OneDrive/Documents/Master/Semestre_2/SEP/projet/countries.csv", locale = locale(decimal_mark = ","))
+# Chargement des donn?es
+countries <- read_csv("D:/Cours/Dossier_stat/countries.csv", locale = locale(decimal_mark = ","))
 View(countries)
-
 # Suppression des colonnes les moins informatives
 cols.dont.want <- c("Population", "Other (%)", "Climate", "Arable (%)", "Crops (%)", "Phones (per 1000)", "Area (sq. mi.)") 
 data <- countries[, ! names(countries) %in% cols.dont.want, drop = F]
-data
+View(data)
 
-# Corrélation entre la migration et les autres variables
-cor(subset(data, select=-c(1)), data["Net migration"], use="complete.obs")
+
 
 # Remplacement des Na par la moyenne des colonnes
 data[] <- lapply(data, function(x) { 
@@ -23,50 +22,71 @@ data[] <- lapply(data, function(x) {
   x
 })
 View(data)
-
-# Dictionnaire de données
-colnames(data) 
-
-# Pays par région
+# Dictionnaire de donn?es
+colnames(data)
+# Pays par r?gion
 data %>%
   select(Country, Region) %>%
   group_by(Region) %>%
   summarise(pays = n())
 
 
-# Solde migratoire moyen par région
+# Solde migratoire moyen par r?gion 
 data %>%
   select(Region, `Net migration`) %>%
   group_by(Region) %>%
-  dplyr::summarize(Moyenne_migratoire=mean(`Net migration`)) %>%
-  collect() %>%
-  ggplot(aes(x=reorder(Region, desc(Moyenne_migratoire)))) +
-  scale_fill_gradient2(low="purple", high="green") +
-  theme_dark() +
-  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5)) +
-  geom_col(aes(x=Region, y=Moyenne_migratoire, fill=Moyenne_migratoire)) 
-  
-  
-
-# Corrélation entre la migration et les autres vairables
-correlation <- cor(data[,c(-1,-2,-5)], data[,5])
-corrplot(correlation, type = 'full', cl.length = 9, cl.ratio = 1)
+  dplyr::summarize(Moyenne = mean(`Net migration`)) %>%
+  collect() %>% 
+  ggplot() +
+  geom_col(aes(x=Region, y=Moyenne)) +
+  theme(axis.text.x=element_text(angle=90, hjust=1, vjust=0.5))
 
 
-# Moyenne des variables (ordonnées par solde migratoire)
-variables_mean <- data %>%
-  select(-Country) %>%
+# Boîte à moustache
+
+boxplot(data$`Net migration`~ data$Region,
+        main = 'Distribution du solde migratoire par Région', #Un titre au graphique
+        xlab = 'Regions',
+        ylab = 'Solde migratoire', #Un label pour l'axe
+        outcol = 2, outpch = 4, cex=0.7)  #On change la forme et la couleur des outliers
+
+
+net_migration_per_region <- data %>%
+  select(Country, Region, `Net migration`) %>%
   group_by(Region) %>%
-  summarise_all(funs(mean)) %>%
-  arrange(desc(`Net migration`))
+  dplyr::summarize(Moyenne_migratoire=mean(`Net migration`)) # on stocke dans l'objet net_migration_per_region
+                                                             #les moyennes par groupe
 
-View(variables_mean)
+#points(1:11,net_migration_per_region , pch = 4, col = 4)#On ajoute les moyennes par groupe
+                                
 
-# Test d'indépendance
-chisq.test(data$Region, data$`Net migration`)
+abline(h = mean(data$`Net migration`, na.rm = TRUE),
+       lty = 2, col = 4, lwd = 1)          #On ajoute la moyenne de l'ensemb
 
-# Test de Bartlett pour la migration par région
+
+#legend("topleft", horiz = TRUE,
+       legend = c("Outliers", "Moyennes des groupes", "Moyenne de l'ensembe"),
+       lty = c(NA, NA, 2), col = c(2, 4, 4), pch = c(3,4, NA))  #On ajoute une boîte de légende
+
+
+# Test de Bartlett pour la migration par rÃ©gion
 bartlett.test(data$`Net migration` ~ data$Region)
 
 # Test ANOVA
-oneway.test(data$`Net migration` ~ data$Region, var.equal = TRUE) 
+oneway.test(data$`Net migration` ~ data$Region, var.equal = FALSE)
+
+
+# Corr?lation entre la migration et les autres vairables
+correlation <- cor(data[,c(-1,-2,-5)], data[,5])
+correlation
+
+
+
+# Moyenne des variables (ordonnÃ©es par solde migratoire)
+variables_mean <- data %>%
+  select(c(-1,-6,-8,-9,-10,-12)) %>%
+  group_by(Region) %>%
+  summarise_all(funs(mean)) %>%
+  arrange(desc(`Net migration`))
+View(variables_mean)
+
